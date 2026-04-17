@@ -20,26 +20,37 @@ Desktop application that converts `.docx` files with underscores into PDF docume
 - Python 3.8+
 - Microsoft Word (required for DOCX → PDF conversion)
 
-## Installation
+## Requirements
 
-### Clone the repository
+### System Requirements
+
+| Platform | Required Software |
+|----------|-------------------|
+| **Windows** | Microsoft Word (2016 or later recommended) |
+| **macOS** | Microsoft Word |
+| **Linux** | LibreOffice (latest version) |
+
+### Installation
+
+### Pre-built executable (recommended)
+1. Download the latest release from the [Releases](https://github.com/chupuka/docx-pdf-field-converter/releases) page
+2. Install the required software (see table above)
+3. Run the executable
+
+### From source
 ```bash
+# Clone the repository
 git clone https://github.com/chupuka/docx-pdf-field-converter.git
 cd docx-pdf-field-converter
-```
 
-### Install dependencies
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### Run the application
-```bash
+# Install required software (see table above)
+
+# Run the application
 python app.py
 ```
-
-### Install pre-built executable
-Download the latest release from the [Releases](https://github.com/chupuka/docx-pdf-field-converter/releases) page.
 
 ## Dependencies
 
@@ -98,16 +109,27 @@ MIT
 
 ## Требования
 
-- Windows / macOS / Linux
-- Python 3.8+
-- Microsoft Word (для конвертации в PDF)
+### Системные требования
+
+| Платформа | Требуемое ПО |
+|-----------|--------------|
+| **Windows** | Microsoft Word (рекомендуется 2016 и новее) |
+| **macOS** | Microsoft Word |
+| **Linux** | LibreOffice (последняя версия) |
 
 ## Установка
 
+### Готовый исполняемый файл (рекомендуется)
+1. Скачайте последний релиз со страницы [Releases](https://github.com/chupuka/docx-pdf-field-converter/releases)
+2. Установите требуемое ПО (см. таблицу выше)
+3. Запустите исполняемый файл
+
+### Из исходного кода
 ```bash
-git clone https://github.com/YOUR_USERNAME/docx-pdf-field-converter.git
+git clone https://github.com/chupuka/docx-pdf-field-converter.git
 cd docx-pdf-field-converter
 pip install -r requirements.txt
+# Установите требуемое ПО (см. таблицу выше)
 python app.py
 ```
 
