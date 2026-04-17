@@ -22,17 +22,24 @@ Desktop application that converts `.docx` files with underscores into PDF docume
 
 ## Installation
 
+### Clone the repository
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/docx-pdf-field-converter.git
+git clone https://github.com/chupuka/docx-pdf-field-converter.git
 cd docx-pdf-field-converter
+```
 
-# Install dependencies
+### Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
-# Run the application
+### Run the application
+```bash
 python app.py
 ```
+
+### Install pre-built executable
+Download the latest release from the [Releases](https://github.com/chupuka/docx-pdf-field-converter/releases) page.
 
 ## Dependencies
 
