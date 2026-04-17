@@ -10,13 +10,6 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        include:
-          - os: windows-latest
-            artifact_name: DocxToPdfConverter.exe
-          - os: macos-latest
-            artifact_name: DocxToPdfConverter-mac
-          - os: ubuntu-latest
-            artifact_name: DocxToPdfConverter-linux
 
     runs-on: ${{ matrix.os }}
 
@@ -44,26 +37,32 @@ jobs:
         run: |
           pyinstaller app.spec --clean
 
-      - name: Prepare artifacts
+      - name: List dist contents
         run: |
-          mkdir -p release
           ls -la dist/
 
-      - name: Copy Windows artifact
+      - name: Prepare Windows artifact
         if: matrix.os == 'windows-latest'
         run: |
+          mkdir -p release
           cp dist/DocxToPdfConverter.exe release/
+          ls -la release/
 
-      - name: Copy macOS artifact
+      - name: Prepare macOS artifact
         if: matrix.os == 'macos-latest'
         run: |
-          cp -r dist/app release/DocxToPdfConverter.app
+          mkdir -p release
+          ls dist/
+          cp -r dist/* release/
+          chmod +x release/*
 
-      - name: Copy Linux artifact
+      - name: Prepare Linux artifact
         if: matrix.os == 'ubuntu-latest'
         run: |
-          cp -r dist/app release/
-          chmod +x release/app/*
+          mkdir -p release
+          ls dist/
+          cp -r dist/* release/
+          chmod +x release/*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
