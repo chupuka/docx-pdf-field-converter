@@ -37,31 +37,51 @@ jobs:
         run: |
           pyinstaller app.spec --clean
 
+      - name: Debug dist contents
+        shell: bash
+        run: |
+          echo "=== Contents of dist/ ==="
+          ls -la dist/
+          echo "=== Contents of dist subdirectories ==="
+          find dist/ -type f -name "DocxToPdfConverter*" 2>/dev/null || true
+          find dist/ -type f 2>/dev/null | head -20 || true
+
       - name: Prepare Windows artifact
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           mkdir -p release
-          cp dist/DocxToPdfConverter.exe release/DocxToPdfConverter.exe
-          ls -la release/
+          EXE_FILE=$(find dist/ -name "*.exe" -type f 2>/dev/null | head -1)
+          if [ -n "$EXE_FILE" ]; then
+            cp "$EXE_FILE" release/DocxToPdfConverter.exe
+          else
+            cp dist/DocxToPdfConverter.exe release/ 2>/dev/null || echo "No exe found"
+          fi
 
       - name: Prepare macOS artifact
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
           mkdir -p release
-          cp -r dist/app release/DocxToPdfConverter.app
-          chmod +x release/DocxToPdfConverter.app/Contents/MacOS/*
-          ls -la release/
+          if [ -d "dist/app" ]; then
+            cp -r dist/app release/DocxToPdfConverter.app
+          elif [ -f "dist/DocxToPdfConverter" ]; then
+            mkdir -p release/DocxToPdfConverter.app/Contents/MacOS
+            cp dist/DocxToPdfConverter release/DocxToPdfConverter.app/Contents/MacOS/
+          fi
 
       - name: Prepare Linux artifact
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           mkdir -p release
-          cp -r dist/app release/DocxToPdfConverter
-          chmod +x release/DocxToPdfConverter
-          ls -la release/
+          if [ -d "dist/app" ]; then
+            cp -r dist/app release/DocxToPdfConverter
+            chmod +x release/DocxToPdfConverter
+          elif [ -f "dist/DocxToPdfConverter" ]; then
+            cp dist/DocxToPdfConverter release/
+            chmod +x release/DocxToPdfConverter
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
