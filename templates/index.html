@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docx → PDF с полями ввода</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            padding: 50px 60px;
+            max-width: 700px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #1e3a5f;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 35px;
+            font-size: 16px;
+        }
+        
+        .files-section {
+            margin-bottom: 25px;
+        }
+        
+        .file-list {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            min-height: 120px;
+            max-height: 250px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        
+        .file-list-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: #888;
+        }
+        
+        .file-list-empty-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .file-list-empty-text {
+            font-size: 15px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e8e8e8;
+            background: white;
+            transition: background 0.2s;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-item:hover {
+            background: #f5f9ff;
+        }
+        
+        .file-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .file-item-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .file-item-name {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-item-size {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .file-item-remove {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: #fee2e2;
+            color: #dc2626;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .file-item-remove:hover {
+            background: #fecaca;
+            transform: scale(1.1);
+        }
+        
+        .add-more-area {
+            border: 2px dashed #aaa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            margin-top: 10px;
+        }
+        
+        .add-more-area:hover {
+            border-color: #1e3a5f;
+            background: #f0f4ff;
+        }
+        
+        .add-more-area.dragover {
+            border-color: #1e3a5f;
+            background: #e8f0ff;
+        }
+        
+        .add-more-icon {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+        
+        .add-more-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-info {
+            display: none;
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            text-align: center;
+            color: #2e7d32;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .folder-section {
+            margin-bottom: 20px;
+        }
+        
+        .folder-select {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .folder-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #fafafa;
+            color: #333;
+        }
+        
+        .folder-input:focus {
+            outline: none;
+            border-color: #1e3a5f;
+        }
+        
+        .folder-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: #1e3a5f;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .folder-btn:hover {
+            background: #2d5a87;
+        }
+        
+        .folder-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #0369a1;
+        }
+        
+        .folder-check-icon {
+            font-size: 16px;
+        }
+        
+        .convert-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .convert-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -10px rgba(30, 58, 95, 0.5);
+        }
+        
+        .convert-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .convert-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1e3a5f;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-text {
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .result {
+            display: none;
+            text-align: center;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        
+        .result.active {
+            display: block;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f7fa;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .info strong {
+            color: #1e3a5f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Docx → PDF с полями</h1>
+        <p class="subtitle">Конвертирует подчеркивания в текстовые поля для ввода</p>
+        
+        <form id="uploadForm">
+            <div class="files-section">
+                <div class="file-list" id="fileList">
+                    <div class="file-list-empty" id="fileListEmpty">
+                        <div class="file-list-empty-icon">📁</div>
+                        <div class="file-list-empty-text">Файлы не выбраны</div>
+                    </div>
+                </div>
+                
+                <div class="add-more-area" id="addMoreArea">
+                    <span class="add-more-icon">➕</span>
+                    <span class="add-more-text">Добавить еще файлы</span>
+                    <input type="file" id="fileInput" name="file" accept=".docx" multiple>
+                </div>
+            </div>
+            
+            <div class="file-info" id="fileInfo"></div>
+            
+            <div class="folder-section">
+                <div class="folder-select">
+                    <input type="text" id="folderPath" class="folder-input" placeholder="Папка для сохранения PDF (оставьте пустым для скачивания)" readonly>
+                    <button type="button" id="folderBtn" class="folder-btn">Выбрать папку</button>
+                </div>
+                <div class="folder-check" id="folderCheck" style="display: none;">
+                    <span class="folder-check-icon">✓</span>
+                    <span id="folderPathText"></span>
+                </div>
+            </div>
+            
+            <button type="submit" class="convert-btn" id="convertBtn" disabled>Конвертировать в PDF</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="status-text">Обработка документа...</div>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="info">
+            <strong>Как это работает:</strong><br>
+            1. Загрузите файл .docx с подчеркиваниями (_min 3 символа)<br>
+            2. Система автоматически заменит их на поля для ввода<br>
+            3. Скачайте готовый PDF с интерактивными полями
+        </div>
+    </div>
+    
+    <script>
+        const fileListEl = document.getElementById('fileList');
+        const fileListEmpty = document.getElementById('fileListEmpty');
+        const addMoreArea = document.getElementById('addMoreArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const convertBtn = document.getElementById('convertBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const folderBtn = document.getElementById('folderBtn');
+        const folderPathInput = document.getElementById('folderPath');
+        const folderCheck = document.getElementById('folderCheck');
+        const folderPathText = document.getElementById('folderPathText');
+        
+        let selectedFiles = [];
+        let selectedFolder = '';
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' Б';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' МБ';
+        }
+        
+        function renderFileList() {
+            const items = fileListEl.querySelectorAll('.file-item');
+            items.forEach(item => item.remove());
+            
+            if (selectedFiles.length === 0) {
+                fileListEmpty.style.display = 'flex';
+                convertBtn.disabled = true;
+                fileInfo.classList.remove('show');
+            } else {
+                fileListEmpty.style.display = 'none';
+                convertBtn.disabled = false;
+                
+                selectedFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.dataset.index = index;
+                    item.innerHTML = `
+                        <div class="file-item-info">
+                            <div class="file-item-icon">📄</div>
+                            <div>
+                                <div class="file-item-name">${file.name}</div>
+                                <div class="file-item-size">${formatFileSize(file.size)}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="file-item-remove" data-index="${index}" title="Удалить">✕</button>
+                    `;
+                    fileListEl.insertBefore(item, fileListEmpty);
+                });
+                
+                if (selectedFiles.length === 1) {
+                    fileInfo.textContent = `Выбран 1 файл: ${selectedFiles[0].name}`;
+                } else {
+                    fileInfo.textContent = `Выбрано файлов: ${selectedFiles.length}`;
+                }
+                fileInfo.classList.add('show');
+            }
+        }
+        
+        function addFiles(newFiles) {
+            const validFiles = Array.from(newFiles).filter(f => 
+                f.name.toLowerCase().endsWith('.docx')
+            );
+            
+            validFiles.forEach(file => {
+                const exists = selectedFiles.some(f => f.name === file.name);
+                if (!exists) {
+                    selectedFiles.push(file);
+                }
+            });
+            
+            renderFileList();
+        }
+        
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderFileList();
+        }
+        
+        addMoreArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        addMoreArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            addMoreArea.classList.add('dragover');
+        });
+        
+        addMoreArea.addEventListener('dragleave', () => {
+            addMoreArea.classList.remove('dragover');
+        });
+        
+        addMoreArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            addMoreArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                addFiles(e.dataTransfer.files);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                addFiles(e.target.files);
+                fileInput.value = '';
+            }
+        });
+        
+        fileListEl.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.file-item-remove');
+            if (removeBtn) {
+                const index = parseInt(removeBtn.dataset.index);
+                removeFile(index);
+            }
+        });
+        
+        folderBtn.addEventListener('click', async () => {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                selectedFolder = dirHandle.name;
+                folderPathInput.value = dirHandle.name;
+                folderPathText.textContent = `PDF будут сохранены в папку: ${dirHandle.name}`;
+                folderCheck.style.display = 'flex';
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error selecting folder:', err);
+                }
+            }
+        });
+        
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedFiles.length) {
+                alert('Выберите файл!');
+                return;
+            }
+            
+            loading.classList.add('active');
+            result.classList.remove('active', 'success', 'error');
+            convertBtn.disabled = true;
+            
+            const formData = new FormData();
+            for (const file of selectedFiles) {
+                formData.append('file', file);
+            }
+            
+            if (selectedFolder) {
+                formData.append('output_folder', selectedFolder);
+            }
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    
+                    if (selectedFolder && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        result.textContent = `Готово! PDF сохранены в папку "${selectedFolder}"`;
+                        result.classList.add('success');
+                    } else {
+                        let downloadName = contentType.includes('zip') ? 'result.zip' : 'result.pdf';
+                        const blob = await response.blob();
+                        
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = downloadName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        
+                        result.textContent = downloadName.endsWith('.zip') 
+                            ? 'Готово! ZIP архив скачан.' 
+                            : 'Готово! PDF файл скачан.';
+                        result.classList.add('success');
+                    }
+                } else {
+                    const text = await response.text();
+                    result.textContent = 'Ошибка: ' + text;
+                    result.classList.add('error');
+                }
+            } catch (error) {
+                result.textContent = 'Ошибка: ' + error.message;
+                result.classList.add('error');
+            }
+            
+            loading.classList.remove('active');
+            result.classList.add('active');
+            convertBtn.disabled = false;
+        });
+    </script>
+</body>
+</html>
