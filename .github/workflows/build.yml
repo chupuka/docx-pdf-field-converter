@@ -42,23 +42,26 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          cp dist/DocxToPdfConverter.exe release/
+          cp dist/DocxToPdfConverter.exe release/DocxToPdfConverter.exe
+          ls -la release/
 
       - name: Prepare macOS artifact
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
           mkdir -p release
-          cp -r dist/* release/
-          chmod +x release/*
+          cp -r dist/app release/DocxToPdfConverter.app
+          chmod +x release/DocxToPdfConverter.app/Contents/MacOS/*
+          ls -la release/
 
       - name: Prepare Linux artifact
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           mkdir -p release
-          cp -r dist/* release/
-          chmod +x release/*
+          cp -r dist/app release/DocxToPdfConverter
+          chmod +x release/DocxToPdfConverter
+          ls -la release/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
