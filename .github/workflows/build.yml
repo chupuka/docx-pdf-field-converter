@@ -44,30 +44,32 @@ jobs:
         run: |
           pyinstaller app.spec --clean
 
-      - name: Rename artifact (Windows)
+      - name: Prepare artifacts
+        run: |
+          mkdir -p release
+          ls -la dist/
+
+      - name: Copy Windows artifact
         if: matrix.os == 'windows-latest'
         run: |
           cp dist/DocxToPdfConverter.exe release/
-        shell: bash
 
-      - name: Rename artifact (macOS)
+      - name: Copy macOS artifact
         if: matrix.os == 'macos-latest'
         run: |
-          mkdir -p release
           cp -r dist/app release/DocxToPdfConverter.app
 
-      - name: Rename artifact (Linux)
+      - name: Copy Linux artifact
         if: matrix.os == 'ubuntu-latest'
         run: |
-          mkdir -p release
-          cp dist/app release/DocxToPdfConverter
-          chmod +x release/DocxToPdfConverter
+          cp -r dist/app release/
+          chmod +x release/app/*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
-          path: release/*
+          path: release/
 
   release:
     needs: build
