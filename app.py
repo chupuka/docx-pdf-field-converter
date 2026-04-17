@@ -162,12 +162,36 @@ def convert_to_pdf(input_docx, output_pdf):
 
         convert(input_docx, output_pdf)
         return os.path.exists(output_pdf)
-    except ImportError:
-        messagebox.showerror("Ошибка", "Установите docx2pdf: pip install docx2pdf")
-        return False
-    except Exception as e:
-        messagebox.showerror("Ошибка", f"Ошибка конвертации: {e}")
-        return False
+    except:
+        pass
+
+    import shutil
+    import subprocess
+
+    soffice = shutil.which("libreoffice") or shutil.which("soffice")
+    if soffice:
+        try:
+            subprocess.run(
+                [
+                    soffice,
+                    "--headless",
+                    "--convert-to",
+                    "pdf",
+                    "--outdir",
+                    os.path.dirname(output_pdf),
+                    os.path.basename(input_docx),
+                ],
+                timeout=60,
+                capture_output=True,
+            )
+            return os.path.exists(output_pdf)
+        except:
+            pass
+
+    messagebox.showerror(
+        "Ошибка", "Не удалось конвертировать. Установите Microsoft Word или LibreOffice"
+    )
+    return False
 
 
 def process_file(input_file, output_folder, progress_callback=None, log_errors=None):

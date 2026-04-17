@@ -34,6 +34,12 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Install LibreOffice (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libreoffice
+
       - name: Build with PyInstaller
         run: |
           pyinstaller app.spec --clean
