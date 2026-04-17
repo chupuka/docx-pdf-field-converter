@@ -10,17 +10,7 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            artifact_name: Windows
-          - os: ubuntu-latest
-            artifact_name: Linux
-          - os: macos-latest
-            artifact_name: macOS
-
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -33,45 +23,21 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Build with PyInstaller (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
           pip install pyinstaller
-          pyinstaller app.spec --clean
 
-      - name: Build with PyInstaller (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build with PyInstaller
         run: |
-          pip install pyinstaller
-          pyinstaller app.spec --clean
-
-      - name: Build with PyInstaller (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          pip install pyinstaller
           pyinstaller app.spec --clean
 
       - name: Create artifact
-        shell: bash
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cd dist && ls -la
-          fi
           mkdir -p release
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp dist/DocxToPdfConverter.exe release/
-          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            cp dist/app release/DocxToPdfConverter
-            chmod +x release/DocxToPdfConverter
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            cp -r dist/app.app release/DocxToPdfConverter.app
-          fi
+          cp dist/DocxToPdfConverter.exe release/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}
+          name: Windows
           path: release/*
 
   create-release:
@@ -82,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           path: artifacts
